@@ -1,112 +1,109 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// App.js
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
+import React, { Component } from 'react';
+import { StyleSheet, View, TextInput, Button, FlatList } from 'react-native';
+import { connect } from 'react-redux';
+import { addPlace } from './src/actions/place';
+import ListItem from './src/components/listItems';
+
+class App extends Component {
+
+  state = {
+    placeName: '',
+    places: []
+  }
+
+  placeSubmitHandler = () => {
+    console.log(this.props);
+    if(this.state.placeName.trim() === '') {
+      return;
+    }
+    this.props.add(this.state.placeName);
+    this.setState({
+      placeName : ''
+    })
+}
+
+placeNameChangeHandler = (value) => {
+  this.setState({
+    placeName: value
+  });    
+}
+
+placesOutput = () => {
+   return (
+    <FlatList style = { styles.listContainer }
+      data = { this.props.places }
+      keyExtractor={(item, index) => index.toString()}
+      renderItem = { info => (
+        <ListItem 
+          placeName={ info.item.value }
+        />
+      )}
+    />
+  )
+}
+
+render() {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <View style={ styles.container }>
+      <View style = { styles.inputContainer }>
+        <TextInput
+          placeholder = "Seach Places"
+          style = { styles.placeInput }
+          value = { this.state.placeName }
+          onChangeText = { this.placeNameChangeHandler }
+        ></TextInput>
+        <Button title = 'Add' 
+          style = { styles.placeButton }
+          onPress = { this.placeSubmitHandler }
+        />
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+        <View style = { styles.listContainer }>
+          { this.placesOutput() }
+        </View>
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    paddingTop: 30,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%'
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  placeInput: {
+    width: '70%'
   },
-  highlight: {
-    fontWeight: '700',
+  placeButton: {
+    width: '30%'
   },
+  listContainer: {
+    width: '100%'
+  }
 });
 
-export default App;
+const mapStateToProps = state => {
+  return {
+    places: state.places.places
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    add: (name) => {
+      dispatch(addPlace(name))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
