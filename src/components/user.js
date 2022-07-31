@@ -1,4 +1,4 @@
-import { AppRegistry, View, StyleSheet, Text, FlatList, Image } from 'react-native';
+import { AppRegistry, View, StyleSheet, Text, FlatList, Image, TextInput } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Actions } from 'react-native-router-flux';
@@ -17,6 +17,9 @@ const userShow = () => {
         setUsers(result.users);
         setLoading(true);
     }
+    const _gotoAddUser = () => {
+        Actions.push('userAdd', { items: users });
+    }
     return (
         <View style={styles.container}>
             <FlatList data={users}
@@ -24,6 +27,9 @@ const userShow = () => {
                     <ListUserItem item={item} />
                 )}
             />
+            <TouchableOpacity style={styles.btnAdd} onPress={(() => _gotoAddUser())}>
+                <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
+            </TouchableOpacity>
         </View>
     )
 };
@@ -57,21 +63,80 @@ const userDetail = (props) => {
         </View>
     )
 };
+const userAdd = (props) => {
+    let [loading, setLoading] = useState(false);
+    let [users, setUsers] = useState(props.items);
+    let [firstName, setFirstName] = useState('');
+    let [lastName, setLastName] = useState('');
+    let [age, setAge] = useState('');
+    let [company, setCompany] = useState('');
+    let [address, setAddress] = useState('');
+    useEffect(() => {
+        // console.log(users);
+    });
+
+    const _addUser = () => {
+        let user = {
+            'fisrtName': firstName,
+            'lastName': lastName,
+            'age': age,
+            'companyName': company,
+            'address': address
+
+        }
+        setUsers(users => [...users, user])
+    }
+
+    return (
+        <View style={styles.detailContainer}>
+            <TextInput
+                style={styles.inputText}
+                onChangeText={(text) => setFirstName(text)}
+                placeholder="First Name"
+            />
+            <TextInput
+                style={styles.inputText}
+                onChangeText={(text) => setLastName(text)}
+                placeholder="Last Name"
+            />
+            <TextInput
+                style={styles.inputText}
+                onChangeText={(text) => setAge(text)}
+                placeholder="Age"
+            />
+            <TextInput
+                style={styles.inputText}
+                onChangeText={(text) => setCompany(text)}
+                placeholder="Company Name"
+            />
+            <TextInput
+                style={styles.inputText}
+                onChangeText={(text) => setAddress(text)}
+                placeholder="Address"
+            />
+            <TouchableOpacity style={styles.btnAdd} onPress={(() => _addUser())}>
+                <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
+            </TouchableOpacity>
+        </View>
+    )
+};
 
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         paddingTop: 30,
         justifyContent: 'flex-start',
         alignItems: 'center',
+        flexDirection: 'column'
     },
     detailContainer: {
         flex: 1,
         flexDirection: 'column',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         padding: 20,
         alignItems: 'center',
-        backgroundColor: '#00ff00',
+        backgroundColor: '#ffde03',
     },
     itemList: {
         flex: 1,
@@ -80,31 +145,52 @@ const styles = StyleSheet.create({
         width: 300,
         height: 100,
         alignItems: 'center',
-        backgroundColor: '#00ff00',
+        backgroundColor: '#ffde03',
         margin: 2,
         borderColor: 'black',
         borderWidth: 1,
         borderRadius: 5
     },
     imageContainer: {
-        width: 150,
-        height: 150,
+        width: 300,
+        height: 300,
         backgroundColor: 'white',
         borderRadius: 75,
         borderWidth: 1,
         borderColor: 'blue'
     },
     textTitle: {
+        textAlign: 'center',
         color: 'black',
         fontSize: 22,
         fontWeight: 'bold'
     },
     text: {
+        textAlign: 'center',
         color: 'black',
         fontSize: 18,
+    },
+    btnAdd: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 100,
+        height: 50,
+        backgroundColor: 'blue',
+        borderRadius: 5,
+        padding: 10
+    },
+    inputText: {
+        margin: 5,
+        width: 200,
+        textAlign: 'center',
+        backgroundColor: 'white',
+        fontSize: 18,
+        borderRadius: 5,
+        borderColor: 'blue',
+        borderWidth: 1,
     }
 
 });
 
 
-export { userShow, userDetail };
+export { userShow, userDetail, userAdd };
