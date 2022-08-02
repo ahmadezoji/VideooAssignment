@@ -1,20 +1,16 @@
 import axios from 'axios';
-import { ADD_USER, GET_USER } from './types';
+import { ADD_USER, GET_USER, REMOVE_USER } from './types';
 const API = 'https://dummyjson.com/users';
-export const addUser = firstName => {
-  return {
-    type: ADD_USER,
-    payload: firstName
-  }
-}
+
 export const getUsers = () => {
   try {
     return async dispatch => {
       const res = await axios.get(`${API}`);
-      if (res.data) {
+      const users = await res.data.users;
+      if (users) {
         dispatch({
           type: GET_USER,
-          payload: res.data,
+          payload: users,
         });
       } else {
         console.log('Unable to fetch');
@@ -23,4 +19,16 @@ export const getUsers = () => {
   } catch (error) {
     // Add custom logic to handle errors
   }
+};
+export const addUser = user => dispatch => {
+  dispatch({
+    type: ADD_USER,
+    payload: user,
+  });
+};
+export const removeUser = user => dispatch => {
+  dispatch({
+    type: REMOVE_USER,
+    payload: user,
+  });
 };

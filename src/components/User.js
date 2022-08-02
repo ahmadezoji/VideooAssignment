@@ -4,80 +4,27 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Actions } from 'react-native-router-flux';
 import { connect, useDispatch, useSelector } from 'react-redux';
 import { GET_USER } from '../actions/types';
-import { getUsers } from '../actions/user';
+import { addUser, getUsers, removeUser } from '../actions/user';
 
 const API = 'https://dummyjson.com/users';
-// class UserClass extends React.Component {
-//     constructor() {
-//         super();
-//         this.state = {
-//             loading: false,
-//             users: []
-//         }
-//     }
-//     componentDidMount() {
-//         // this.getUsers();
-//     }
-//     async getUsers() {
-//         let response = await fetch(API);
-//         let result = await response.json();
-//         this.setState({
-//             // users: result.users,
-//             loading: true
-//         })
-//         dispatch({
-//             type: GET_USER,
-//             payload: result.users,
-//           });
-//         // this.props.addUser('saam');
-//         console.log(this.props);
-//     }
-//     render() {
-//         if (!this.state.loading) {
-//             return (
-//                 <View style={[styles.container, { justifyContent: 'center' }]}>
-//                     <ActivityIndicator color={'blue'} size={50} />
-//                 </View>
-//             );
-//         }
-//         return (
-//             <View style={styles.container}>
-//                 <FlatList data={this.state.users}
-//                     renderItem={(item) => (
-//                         <ListUserItem item={item} />
-//                     )}
-//                 />
-//                 <TouchableOpacity style={styles.btnAdd} onPress={(() => Actions.push('userAdd', { items: this.state.users }))}>
-//                     <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
-//                 </TouchableOpacity>
-//             </View>
-//         )
-
-//     }
-// }
 const UserShow = () => {
     let [loading, setLoading] = useState(false);
-    // let [users, setUsers] = useState([]);
+    let [refreshing, setRefreshing] = useState(false);
 
     const { users } = useSelector(state => state.userReducer);
     const dispatch = useDispatch();
     const fetchUsers = () => dispatch(getUsers());
     useEffect(() => {
-        // getUsers()
         fetchUsers();
-        // console.log(users);
-    }, [users!==null]);
-
-    // const getUsers = async () => {
-    //     let response = await fetch(API);
-    //     let result = await response.json();
-    //     setUsers(result.users);
-    //     setLoading(true);
-    // }
+    }, [users !== null]);
     const _gotoAddUser = () => {
-        Actions.push('userAdd', { items: users });
+        Actions.push('userAdd');
     }
-    if (!loading) {
+
+    const _onRefresh = () => {
+        Actions.refresh('userShow');
+    }
+    if (users.length == 0) {
         return (
             <View style={[styles.container, { justifyContent: 'center' }]}>
                 <ActivityIndicator color={'blue'} size={50} />
@@ -87,7 +34,9 @@ const UserShow = () => {
     return (
         <View style={styles.container}>
             <FlatList data={users}
-                renderItem={({item}) => (
+                refreshing={refreshing}
+                onRefresh={_onRefresh}
+                renderItem={({ item }) => (
                     <ListUserItem item={item} />
                 )}
             />
@@ -97,10 +46,15 @@ const UserShow = () => {
         </View>
     )
 };
-const ListUserItem = ({props}) => {
-    let [item, setItem] = useState(props.item.item);
+const ListUserItem = (props) => {
+    let [item, setItem] = useState(props.item);
+    const dispatch = useDispatch();
+    const removeFromUsers = user => dispatch(removeUser(user));
+    const handleRemoveUser = user => {
+        removeFromUsers(user);
+    };
     return (
-        <TouchableOpacity onPress={(props) => Actions.push('userDetail', { item: item })}>
+        <TouchableOpacity onPress={() => Actions.push('userDetail', { item: item })} onLongPress={() => handleRemoveUser(item)}>
             <View style={styles.itemList}>
                 <Image style={{ width: 100, height: '90%' }} source={{ uri: item.image }} />
                 <Text style={styles.text}>{item.firstName}   </Text>
@@ -127,58 +81,77 @@ const userDetail = (props) => {
         </View>
     )
 };
-const userAdd = (props) => {
-    console.log(props);
+const userAdd = () => {
     let [loading, setLoading] = useState(false);
-    let [users, setUsers] = useState(props.items);
     let [firstName, setFirstName] = useState('');
     let [lastName, setLastName] = useState('');
     let [age, setAge] = useState('');
     let [company, setCompany] = useState('');
     let [address, setAddress] = useState('');
+    let [image, setImage] = useState('https://robohash.org/hicveldicta.png');
+
+    const WIDTH_INPUT = 200;
+
+    const dispatch = useDispatch();
+    const AddToUsers = user => dispatch(addUser(user));
+    const handleAddUser = user => {
+        AddToUsers(user);
+    };
+
     useEffect(() => {
 
     });
 
     const _addUser = () => {
         let user = {
-            'fisrtName': firstName,
+            'id' : `${Math.floor(Math.random() * (100 - 30 + 1)) + 30}`,
+            'firstName': firstName,
             'lastName': lastName,
             'age': age,
-            'companyName': company,
-            'address': address
-
+            'company': { 'name': company },
+            'address': { 'address': address },
+            'image': image
         }
-        setUsers(users => [...users, user])
+        handleAddUser(user);
     }
 
     return (
         <View style={styles.detailContainer}>
             <TextInput
-                style={styles.inputText}
+                style={[{ width: WIDTH_INPUT }, styles.inputText]}
                 onChangeText={(text) => setFirstName(text)}
                 placeholder="First Name"
             />
             <TextInput
-                style={styles.inputText}
+                style={[{ width: WIDTH_INPUT }, styles.inputText]}
                 onChangeText={(text) => setLastName(text)}
                 placeholder="Last Name"
             />
             <TextInput
-                style={styles.inputText}
+                style={[{ width: WIDTH_INPUT }, styles.inputText]}
                 onChangeText={(text) => setAge(text)}
                 placeholder="Age"
             />
             <TextInput
-                style={styles.inputText}
+                style={[{ width: WIDTH_INPUT }, styles.inputText]}
                 onChangeText={(text) => setCompany(text)}
                 placeholder="Company Name"
             />
             <TextInput
-                style={styles.inputText}
+                style={[{ width: WIDTH_INPUT }, styles.inputText]}
                 onChangeText={(text) => setAddress(text)}
                 placeholder="Address"
             />
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <TextInput
+                    style={[{ width: 250 }, styles.inputText]}
+                    onChangeText={(text) => setImage(text)}
+                    value={image}
+                    placeholder="Image"
+                />
+                <Image style={{ width: 60, height: 60 }} source={{ uri: image }}></Image>
+            </View>
+
             <TouchableOpacity style={styles.btnAdd} onPress={(() => _addUser())}>
                 <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
             </TouchableOpacity>
@@ -247,7 +220,6 @@ const styles = StyleSheet.create({
     },
     inputText: {
         margin: 5,
-        width: 200,
         textAlign: 'center',
         backgroundColor: 'white',
         fontSize: 18,
