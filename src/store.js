@@ -1,16 +1,20 @@
 // store.js
-
-import { createStore, combineReducers } from 'redux';
-import placeReducer from './reducers/placeReducer';
+import {createStore, combineReducers, applyMiddleware} from 'redux';
+import thunk from 'redux-thunk';
 import userReducer from './reducers/userReducer';
 
+// const rootReducer = combineReducers({
+//   users : userReducer
+// });
+
+// const configureStore = () => {
+//   return createStore(rootReducer);
+// }
+
+// export default configureStore;
+
+
 const rootReducer = combineReducers({
-  places: placeReducer,
-  users : userReducer
+  userReducer,
 });
-
-const configureStore = () => {
-  return createStore(rootReducer);
-}
-
-export default configureStore;
+export const store = createStore(rootReducer, applyMiddleware(thunk));

@@ -2,90 +2,102 @@ import { AppRegistry, View, StyleSheet, Text, FlatList, Image, TextInput, Activi
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Actions } from 'react-native-router-flux';
-import { connect } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
+import { GET_USER } from '../actions/types';
+import { getUsers } from '../actions/user';
 
 const API = 'https://dummyjson.com/users';
-class UserClass extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            loading: false,
-            users: []
-        }
-    }
-    componentDidMount() {
-        this.getUsers();
-    }
-    async getUsers() {
-        let response = await fetch(API);
-        let result = await response.json();
-        this.setState({
-            users: result.users,
-            loading: true
-        })
-        // this.props.addUser('saam');
-        console.log(this.props);
-    }
-    render() {
-        if (!this.state.loading) {
-            return (
-                <View style={[styles.container, { justifyContent: 'center' }]}>
-                    <ActivityIndicator color={'blue'} size={50} />
-                </View>
-            );
-        }
-        return (
-            <View style={styles.container}>
-                <FlatList data={this.state.users}
-                    renderItem={(item) => (
-                        <ListUserItem item={item} />
-                    )}
-                />
-                <TouchableOpacity style={styles.btnAdd} onPress={(() => Actions.push('userAdd', { items: this.state.users }))}>
-                    <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
-                </TouchableOpacity>
-            </View>
-        )
-
-    }
-}
-// const UserShow = () => {
-//     let [loading, setLoading] = useState(false);
-//     let [users, setUsers] = useState([]);
-//     useEffect(() => {
-//         getUsers()
-//     }, [loading]);
-
-//     const getUsers = async () => {
+// class UserClass extends React.Component {
+//     constructor() {
+//         super();
+//         this.state = {
+//             loading: false,
+//             users: []
+//         }
+//     }
+//     componentDidMount() {
+//         // this.getUsers();
+//     }
+//     async getUsers() {
 //         let response = await fetch(API);
 //         let result = await response.json();
-//         setUsers(result.users);
-//         setLoading(true);
+//         this.setState({
+//             // users: result.users,
+//             loading: true
+//         })
+//         dispatch({
+//             type: GET_USER,
+//             payload: result.users,
+//           });
+//         // this.props.addUser('saam');
+//         console.log(this.props);
 //     }
-//     const _gotoAddUser = () => {
-//         Actions.push('userAdd', { items: users });
-//     }
-//     if (!loading) {
+//     render() {
+//         if (!this.state.loading) {
+//             return (
+//                 <View style={[styles.container, { justifyContent: 'center' }]}>
+//                     <ActivityIndicator color={'blue'} size={50} />
+//                 </View>
+//             );
+//         }
 //         return (
-//             <View style={[styles.container, { justifyContent: 'center' }]}>
-//                 <ActivityIndicator color={'blue'} size={50} />
+//             <View style={styles.container}>
+//                 <FlatList data={this.state.users}
+//                     renderItem={(item) => (
+//                         <ListUserItem item={item} />
+//                     )}
+//                 />
+//                 <TouchableOpacity style={styles.btnAdd} onPress={(() => Actions.push('userAdd', { items: this.state.users }))}>
+//                     <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
+//                 </TouchableOpacity>
 //             </View>
-//         );
+//         )
+
 //     }
-//     return (
-//         <View style={styles.container}>
-//             <FlatList data={users}
-//                 renderItem={(item) => (
-//                     <ListUserItem item={item} />
-//                 )}
-//             />
-//             <TouchableOpacity style={styles.btnAdd} onPress={(() => _gotoAddUser())}>
-//                 <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
-//             </TouchableOpacity>
-//         </View>
-//     )
-// };
-const ListUserItem = (props) => {
+// }
+const UserShow = () => {
+    let [loading, setLoading] = useState(false);
+    // let [users, setUsers] = useState([]);
+
+    const { users } = useSelector(state => state.userReducer);
+    const dispatch = useDispatch();
+    const fetchUsers = () => dispatch(getUsers());
+    useEffect(() => {
+        // getUsers()
+        fetchUsers();
+        // console.log(users);
+    }, [users!==null]);
+
+    // const getUsers = async () => {
+    //     let response = await fetch(API);
+    //     let result = await response.json();
+    //     setUsers(result.users);
+    //     setLoading(true);
+    // }
+    const _gotoAddUser = () => {
+        Actions.push('userAdd', { items: users });
+    }
+    if (!loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center' }]}>
+                <ActivityIndicator color={'blue'} size={50} />
+            </View>
+        );
+    }
+    return (
+        <View style={styles.container}>
+            <FlatList data={users}
+                renderItem={({item}) => (
+                    <ListUserItem item={item} />
+                )}
+            />
+            <TouchableOpacity style={styles.btnAdd} onPress={(() => _gotoAddUser())}>
+                <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>Add</Text>
+            </TouchableOpacity>
+        </View>
+    )
+};
+const ListUserItem = ({props}) => {
     let [item, setItem] = useState(props.item.item);
     return (
         <TouchableOpacity onPress={(props) => Actions.push('userDetail', { item: item })}>
@@ -246,21 +258,20 @@ const styles = StyleSheet.create({
 
 });
 
-const mapStateToProps = state => {
-    return {
-        places: state.places.places,
-        users: state.users.users
-    }
-}
+// const mapStateToProps = state => {
+//     return {
+//         users: state.users.users
+//     }
+// }
 
-const mapDispatchToProps = dispatch => {
-    return {
-        addUser: (name) => {
-            dispatch(addUser(name))
-        }
-    }
-}
-export default connect(mapStateToProps, mapDispatchToProps)(UserClass)
+// const mapDispatchToProps = dispatch => {
+//     return {
+//         addUser: (name) => {
+//             dispatch(addUser(name))
+//         }
+//     }
+// }
+// export default connect(mapStateToProps, mapDispatchToProps)(UserShow)
 
 
-export { userDetail, userAdd };
+export { userDetail, userAdd, UserShow };
